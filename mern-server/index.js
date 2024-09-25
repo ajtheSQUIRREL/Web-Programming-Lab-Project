@@ -3,16 +3,16 @@ const app = express();
 const port = process.env.PORT || 5000;
 const cors = require("cors");
 
-//middlewire
+// Middleware
 app.use(cors());
 app.use(express.json());
 
+// Root endpoint
 app.get("/", (req, res) => {
   res.send("Hello World!");
 });
 
-//mongodb config
-
+// MongoDB configuration
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const uri =
   "mongodb+srv://book-nest:ANy4cvWkmPk9lggm@cluster0.imdtm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
@@ -26,34 +26,42 @@ const client = new MongoClient(uri, {
   },
 });
 
+// Async function to run the server
 async function run() {
   try {
-    // Connect the client to the server	(optional starting in v4.7)
+    // Connect the client to the server
     await client.connect();
 
-    //create a collection of documents
+    // Create a collection of documents
     const bookCollections = client.db("BookInventory").collection("Books");
 
-    //insert a book to the db: post method
+    // Insert a book to the DB: POST method
     app.post("/upload-book", async (req, res) => {
       const data = req.body;
       const result = await bookCollections.insertOne(data);
       res.send(result);
     });
 
-    //Get all books from database
+    // Get all books or filter by category
     app.get("/all-books", async (req, res) => {
-      const books = await bookCollections.find();
-      const result = await books.toArray();
-      res.send(result);
+      let query = {};
+      if (req.query?.category) {
+        query = { category: req.query.category }; // Set the query to filter by category
+      }
+
+      try {
+        const result = await bookCollections.find(query).toArray(); // Fetch the filtered results
+        res.send(result); // Send the results back to the client
+      } catch (error) {
+        console.error("Error fetching books:", error);
+        res.status(500).send("Failed to fetch books");
+      }
     });
 
-    //update a book data : patch or update methods
+    // Update a book data: PATCH or UPDATE methods
     app.patch("/book/:id", async (req, res) => {
       const id = req.params.id;
-      //console.log(id);
       const updateBookData = req.body;
-
       const filter = { _id: new ObjectId(id) };
       const options = { upsert: true };
       const updateDoc = {
@@ -70,21 +78,11 @@ async function run() {
       res.send(result);
     });
 
-    //Delete a book data
+    // Delete a book data
     app.delete("/book/:id", async (req, res) => {
       const id = req.params.id;
       const filter = { _id: new ObjectId(id) };
       const result = await bookCollections.deleteOne(filter);
-      res.send(result);
-    });
-
-    // Find by category
-    app.get("/all-books", async (req, res) => {
-      let query = {};
-      if (req.query?.category) {
-        query = { category: req.query.category };
-      }
-      const result = await bookCollections.find(query).toArray;
       res.send(result);
     });
 
@@ -95,9 +93,11 @@ async function run() {
     );
   } finally {
     // Ensures that the client will close when you finish/error
-    //await client.close();
+    // await client.close();
   }
 }
+
+// Start the server and run the connection
 run().catch(console.dir);
 
 app.listen(port, () => {
