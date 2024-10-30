@@ -4,7 +4,7 @@ const port = process.env.PORT || 5000;
 const cors = require("cors");
 
 // Middleware
-app.use(cors());
+app.use(cors({ origin: "http://localhost:5173" }));
 app.use(express.json());
 
 // Root endpoint
@@ -56,6 +56,14 @@ async function run() {
         console.error("Error fetching books:", error);
         res.status(500).send("Failed to fetch books");
       }
+    });
+
+    //to get single book data
+    app.get("/book/:id", async (req, res) => {
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const result = await bookCollections.findOne(filter); // Fetch the filtered results
+      res.send(result);
     });
 
     // Update a book data: PATCH or UPDATE methods
