@@ -1,8 +1,13 @@
 {
   "dependencies": {
+    "autoprefixer": "^10.4.20",
+    "flowbite": "^2.5.2",
+    "flowbite-react": "^0.10.2",
+    "postcss": "^8.4.49",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
-    "swiper": "^11.1.14"
+    "swiper": "^11.1.14",
+    "tailwindcss": "^3.4.15"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.3"
